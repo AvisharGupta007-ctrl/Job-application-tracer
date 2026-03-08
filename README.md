@@ -1,5 +1,3 @@
-# Job-application-tracer
-Tracker
 import { useState } from "react";
 
 const sections = [
@@ -40,6 +38,56 @@ const sections = [
   },
 ];
 
+const getProgressBarStyle = (progress) => {
+  return {
+    height: "100%",
+    width: progress + "%",
+    background: "linear-gradient(90deg, #A78BFA, #F59E0B)",
+    borderRadius: 3,
+    transition: "width 0.4s cubic-bezier(.4,0,.2,1)",
+  };
+};
+
+const getCheckboxStyle = (isDone, color) => {
+  return {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    border: "1.5px solid " + (isDone ? color : "#2E2E3A"),
+    background: isDone ? color : "transparent",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    marginTop: 1,
+    transition: "all 0.2s ease",
+  };
+};
+
+const getSectionHeaderStyle = (allDone, color) => {
+  return {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "18px 22px",
+    cursor: "pointer",
+    borderLeft: "3px solid " + color,
+    userSelect: "none",
+    background: allDone ? color + "08" : "transparent",
+    transition: "background 0.3s",
+  };
+};
+
+const getItemTextStyle = (isDone) => {
+  return {
+    fontSize: 13.5,
+    color: isDone ? "#3A3A4A" : "#B8B0A0",
+    textDecoration: isDone ? "line-through" : "none",
+    lineHeight: 1.5,
+    transition: "all 0.2s ease",
+  };
+};
+
 export default function JobChecklist() {
   const [checked, setChecked] = useState({});
   const [collapsed, setCollapsed] = useState({});
@@ -47,7 +95,7 @@ export default function JobChecklist() {
   const [editing, setEditing] = useState(true);
 
   const toggle = (sectionId, idx) => {
-    const key = `${sectionId}-${idx}`;
+    const key = sectionId + "-" + idx;
     setChecked((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
@@ -77,7 +125,7 @@ export default function JobChecklist() {
             color: "#555",
             marginBottom: 12,
           }}>
-            ✦ Active Application Tracker ✦
+            Active Application Tracker
           </div>
 
           {editing ? (
@@ -157,17 +205,11 @@ export default function JobChecklist() {
               color: progress === 100 ? "#4ECDC4" : "#A78BFA",
               letterSpacing: "0.05em",
             }}>
-              {progress === 100 ? "🎉 Complete!" : `${progress}%`}
+              {progress === 100 ? "Complete!" : progress + "%"}
             </span>
           </div>
           <div style={{ height: 5, background: "#222", borderRadius: 3, overflow: "hidden" }}>
-            <div style={{
-              height: "100%",
-              width: `${progress}%`,
-              background: "linear-gradient(90deg, #A78BFA, #F59E0B)",
-              borderRadius: 3,
-              transition: "width 0.4s cubic-bezier(.4,0,.2,1)",
-            }} />
+            <div style={getProgressBarStyle(progress)} />
           </div>
           {progress > 0 && progress < 100 && (
             <div style={{ marginTop: 10, fontSize: 11, color: "#444", textAlign: "right" }}>
@@ -178,7 +220,7 @@ export default function JobChecklist() {
 
         {/* Sections */}
         {sections.map((section) => {
-          const sectionChecked = section.items.filter((_, i) => checked[`${section.id}-${i}`]).length;
+          const sectionChecked = section.items.filter((_, i) => checked[section.id + "-" + i]).length;
           const isCollapsed = collapsed[section.id];
           const allDone = sectionChecked === section.items.length;
 
@@ -192,22 +234,14 @@ export default function JobChecklist() {
             }}>
               <div
                 onClick={() => toggleCollapse(section.id)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "18px 22px",
-                  cursor: "pointer",
-                  borderLeft: `3px solid ${section.color}`,
-                  userSelect: "none",
-                  background: allDone ? `${section.color}08` : "transparent",
-                  transition: "background 0.3s",
-                }}
+                style={getSectionHeaderStyle(allDone, section.color)}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 18 }}>{section.emoji}</span>
                   <span style={{ fontSize: 15, letterSpacing: "0.02em" }}>{section.title}</span>
-                  {allDone && <span style={{ fontSize: 10, color: section.color, letterSpacing: "0.1em" }}>DONE</span>}
+                  {allDone && (
+                    <span style={{ fontSize: 10, color: section.color, letterSpacing: "0.1em" }}>DONE</span>
+                  )}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <span style={{
@@ -217,14 +251,14 @@ export default function JobChecklist() {
                   }}>
                     {sectionChecked}/{section.items.length}
                   </span>
-                  <span style={{ color: "#333", fontSize: 11 }}>{isCollapsed ? "▶" : "▼"}</span>
+                  <span style={{ color: "#333", fontSize: 11 }}>{isCollapsed ? ">" : "v"}</span>
                 </div>
               </div>
 
               {!isCollapsed && (
                 <div style={{ padding: "4px 22px 18px" }}>
                   {section.items.map((item, i) => {
-                    const key = `${section.id}-${i}`;
+                    const key = section.id + "-" + i;
                     const isDone = checked[key];
                     return (
                       <div
@@ -239,32 +273,14 @@ export default function JobChecklist() {
                           cursor: "pointer",
                         }}
                       >
-                        <div style={{
-                          width: 18,
-                          height: 18,
-                          borderRadius: 4,
-                          border: `1.5px solid ${isDone ? section.color : "#2E2E3A"}`,
-                          background: isDone ? section.color : "transparent",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                          marginTop: 1,
-                          transition: "all 0.2s ease",
-                        }}>
+                        <div style={getCheckboxStyle(isDone, section.color)}>
                           {isDone && (
                             <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
                               <path d="M1 4L3.5 6.5L9 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
                           )}
                         </div>
-                        <span style={{
-                          fontSize: 13.5,
-                          color: isDone ? "#3A3A4A" : "#B8B0A0",
-                          textDecoration: isDone ? "line-through" : "none",
-                          lineHeight: 1.5,
-                          transition: "all 0.2s ease",
-                        }}>
+                        <span style={getItemTextStyle(isDone)}>
                           {item}
                         </span>
                       </div>
@@ -277,7 +293,7 @@ export default function JobChecklist() {
         })}
 
         <div style={{ textAlign: "center", marginTop: 32, fontSize: 10, color: "#2A2A2A", letterSpacing: "0.2em" }}>
-          YOU'VE GOT THIS ✦ KEEP GOING
+          YOU VE GOT THIS - KEEP GOING
         </div>
       </div>
     </div>
